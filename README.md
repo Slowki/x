@@ -4,6 +4,7 @@ Want a development container?
 
 # Usage
 * Put `x` somewhere in your `PATH`.
+* Create an `x.json` file for your project.
 * Run `x <COMMAND>` to run your command inside a development container.
 * To get the ID of the container run `x` without any arguments.
 
@@ -31,7 +32,7 @@ Additionally you can override fields from the project configuration by supplying
 * `docker_context` - The context directory to use to build the image if `dockerfile` is supplied.
 * `docker_network` - The argument to pass to docker's `--network` flag (default: `host`).
 
-## Example
+## Example Configuration
 For more examples take a look at the `./examples` directory.
 
 ```json
