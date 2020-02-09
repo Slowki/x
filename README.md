@@ -29,7 +29,10 @@ Additionally you can override fields from the project configuration by supplying
 
 * `image` - An image to use for the container (example: `ubuntu:19.04`)
 * `dockerfile` - The path to a Dockerfile to use to build the container.
+* `docker_buildkit` - Enable [BuildKit](https://docs.docker.com/develop/develop-images/build_enhancements/).
 * `docker_context` - The context directory to use to build the image if `dockerfile` is supplied.
+* `docker_secrets` - Pass `--secret` to the `docker build` command.
+* `docker_ssh` - Pass `--ssh=default` to the `docker build` command.
 * `docker_network` - The argument to pass to docker's `--network` flag (default: `host`).
 
 ## Example Configuration

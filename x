@@ -24,6 +24,7 @@ from typing import (
     Optional,
     Set,
     Type,
+    Union,
 )
 
 LOGGER = logging.Logger(__name__)
@@ -47,7 +48,10 @@ class Configuration:
     #: The container image to use for this project.
     image: Optional[str] = None
     dockerfile: Optional[str] = None
+    docker_buildkit: Optional[bool] = False
     docker_context: Optional[str] = None
+    docker_secrets: Optional[List[str]] = None
+    docker_ssh: Optional[bool] = False
     docker_network: str = "host"
 
     environment: str = "docker"
@@ -293,17 +297,29 @@ class DockerExecutor(Executor):
                 else dockerfile.parent
             )
 
-            build_result = subprocess.run(
-                [
-                    "docker",
-                    "build",
-                    "-f",
-                    dockerfile,
-                    "--iidfile",
-                    id_file.name,
-                    context,
-                ]
-            )
+            env = os.environ.copy()
+            if self.configuration.docker_buildkit:
+                env["DOCKER_BUILDKIT"] = "1"
+
+            build_command: List[Union[str, Path]] = [
+                "docker",
+                "build",
+                "-f",
+                dockerfile,
+                "--iidfile",
+                id_file.name,
+            ]
+
+            if self.configuration.docker_ssh:
+                build_command.append("--ssh=default")
+
+            if self.configuration.docker_secrets:
+                for secret in self.configuration.docker_secrets:
+                    build_command.extend(
+                        ("--secret", secret.replace("$HOME", str(Path.home())))
+                    )
+
+            build_result = subprocess.run(build_command + [context], env=env)
             if build_result.returncode != 0:
                 sys.exit(build_result.returncode)
             return Path(id_file.name).read_text().strip()
