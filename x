@@ -131,7 +131,11 @@ class Executor:
         )
         if lsblk.returncode == 0:
             volumes.update(
-                {line for line in lsblk.stdout.splitlines()[1:] if line.strip()}
+                {
+                    line
+                    for line in lsblk.stdout.splitlines()[1:]
+                    if line.strip() and line[0] == "/" and not line.startswith("/snap/")
+                }
             )
 
         volumes.add(os.fspath(self.project_dir))
