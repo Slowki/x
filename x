@@ -337,7 +337,7 @@ class DockerExecutor(Executor):
             f"--user={self.username}",
             f"--env=HOME={self.home}",
             f"--workdir={Path.cwd()}",
-            "-it" if sys.stdout.isatty() or sys.stderr.isatty() else "-i",
+            "-it" if all((sys.stdout.isatty(), sys.stderr.isatty(), sys.stdin.isatty())) else "-i",
         ]
         if DISPLAY in os.environ:
             docker_exec.append(f"--env={DISPLAY}={os.environ[DISPLAY]}")
