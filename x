@@ -53,6 +53,8 @@ class Configuration:
     docker_secrets: Optional[List[str]] = None
     docker_ssh: Optional[bool] = False
     docker_network: str = "host"
+    docker_privileged: Optional[bool] = False
+    docker_cap_add: Optional[List[str]] = None
 
     environment: str = "docker"
 
@@ -93,7 +95,7 @@ class Configuration:
             if field_value:
                 kwargs[native_name] = value
             else:
-                LOGGER.error(f"Unknown configuration field `{name}`", file=sys.stderr)
+                LOGGER.error("Unknown configuration field `%s`", name)
 
         configuration = Configuration(**kwargs)
         if configuration.environment not in EXECUTOR_MAP:
@@ -181,7 +183,7 @@ class Executor:
             stderr=subprocess.DEVNULL,
         )
         if xhost_result.returncode != 0:
-            LOGGER.warn(xhost_result.stderr)
+            LOGGER.warning(xhost_result.stderr)
             return False
         return True
 
@@ -249,6 +251,12 @@ class DockerExecutor(Executor):
             "--gpus=all",
             f"--network={self.configuration.docker_network}",
         ]
+        if self.configuration.docker_cap_add:
+            spawn_command.extend(
+                ("--cap-add=" + cap for cap in self.configuration.docker_cap_add)
+            )
+        if self.configuration.docker_privileged:
+            spawn_command.append("--privileged")
         for volume in self.get_volumes():
             spawn_command.extend(("-v", f"{volume}:{volume}"))
 
